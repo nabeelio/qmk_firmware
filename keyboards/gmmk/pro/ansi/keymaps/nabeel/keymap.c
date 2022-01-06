@@ -167,10 +167,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         rgb_matrix_mode(RGB_MATRIX_SOLID_COLOR);          // Can use RGB_M_P built-in keycode instead.
         break;
      case LED_1:
-        rgb_matrix_mode(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
+        rgb_matrix_mode(RGB_MATRIX_CYCLE_LEFT_RIGHT);
         break;
     case LED_2:
-        rgb_matrix_mode(RGB_MATRIX_GRADIENT_UP_DOWN);
+        rgb_matrix_mode(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
         break;
     case LED_3:
         rgb_matrix_mode(RGB_MATRIX_JELLYBEAN_RAINDROPS);
