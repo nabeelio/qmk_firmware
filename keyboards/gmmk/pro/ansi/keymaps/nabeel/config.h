@@ -19,6 +19,8 @@
 // I like NKRO.. but let's not force it. @drashna pointed out some older hardware has issues - Toggle it via keycode if you like.
 // #define FORCE_NKRO
 
+#define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_CYCLE_LEFT_RIGHT
+
 // At the time of this, there are 41 effects! That may be a bit too many to cycle through - keeping what I believe is the best.
 #ifdef RGB_MATRIX_ENABLE
 
@@ -34,7 +36,7 @@
 //    #undef ENABLE_RGB_MATRIX_SOLID_COLOR               // BUILT IN (MAPPED!) Static single color.
 //    #undef ENABLE_RGB_MATRIX_ALPHAS_MODS               // Accenting various keys on the keyboard.
 //    #undef ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN          // Top down rainbow!
-#    undef ENABLE_RGB_MATRIX_GRADIENT_LEFT_RIGHT        // Left Right Rainbow (the top-down is better imho).
+//#    undef ENABLE_RGB_MATRIX_GRADIENT_LEFT_RIGHT        // Left Right Rainbow (the top-down is better imho).
                                                         //    #undef ENABLE_RGB_MATRIX_BREATHING                 // Built in (MAPPED!)
                                                         //    #undef ENABLE_RGB_MATRIX_BAND_SAT                  // Single hue band fading saturation scrolling left to right (with white)
                                                         //    #undef ENABLE_RGB_MATRIX_BAND_VAL                  // Single hue band fading brightness scrolling left to right (with black)
