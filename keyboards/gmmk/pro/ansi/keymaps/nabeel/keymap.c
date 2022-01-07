@@ -246,6 +246,20 @@ void rgb_matrix_indicators_user(void) {
 //  91, led 08                                                                                                                                                                      92, led 19
 
 static void set_rgb_caps_leds_on() {
+        // f1 -> f12 keys
+        rgb_matrix_set_color(6, 255, 0, 0);
+        rgb_matrix_set_color(12, 255, 0, 0);
+        rgb_matrix_set_color(18, 255, 0, 0);
+        rgb_matrix_set_color(23, 255, 0, 0);
+        rgb_matrix_set_color(28, 255, 0, 0);
+        rgb_matrix_set_color(34, 255, 0, 0);
+        rgb_matrix_set_color(39, 255, 0, 0);
+        rgb_matrix_set_color(44, 255, 0, 0);
+        rgb_matrix_set_color(50, 255, 0, 0);
+        rgb_matrix_set_color(56, 255, 0, 0);
+        rgb_matrix_set_color(61, 255, 0, 0);
+        rgb_matrix_set_color(66, 255, 0, 0);
+
         rgb_matrix_set_color(0, 255, 0, 0);       //Escape Key
         rgb_matrix_set_color(3, 255, 0, 0);       //capslock key
         rgb_matrix_set_color(5, 255, 0, 0);       //Left CTRL key
@@ -268,6 +282,20 @@ static void set_rgb_caps_leds_on() {
 }
 
 static void set_rgb_caps_leds_off() {
+            // f1 -> f12 keys
+        rgb_matrix_set_color(6, 0, 0, 0);
+        rgb_matrix_set_color(12, 0, 0, 0);
+        rgb_matrix_set_color(18, 0, 0, 0);
+        rgb_matrix_set_color(23, 0, 0, 0);
+        rgb_matrix_set_color(28, 0, 0, 0);
+        rgb_matrix_set_color(34, 0, 0, 0);
+        rgb_matrix_set_color(39, 0, 0, 0);
+        rgb_matrix_set_color(44, 0, 0, 0);
+        rgb_matrix_set_color(50, 0, 0, 0);
+        rgb_matrix_set_color(56, 0, 0, 0);
+        rgb_matrix_set_color(61, 0, 0, 0);
+        rgb_matrix_set_color(66, 0, 0, 0);
+
         rgb_matrix_set_color(0,  0, 0, 0); //Escape Key
         rgb_matrix_set_color(3,  0, 0, 0); //capslock key
         rgb_matrix_set_color(5,  0, 0, 0); //Left CTRL key
