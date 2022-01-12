@@ -112,5 +112,8 @@
 /* Set debounce time */
 #define DEBOUNCE 8 // in ms, default is 5
 
+// Disable the lights after 15 minutes
+// #define RGB_DISABLE_TIMEOUT 1000 * 60 * 15 // 15 minutes, to milliseconds
+
 /* Force NKRO on boot up regardless of the setting saved in the EEPROM (uncomment to enable it) */
 // #define FORCE_NKRO
