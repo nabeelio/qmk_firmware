@@ -27,10 +27,14 @@
 // #define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_SOLID_COLOR
 
 // Below added per: https://beta.docs.qmk.fm/using-qmk/hardware-features/lighting/feature_rgb_matrix#suspended-state-id-suspended-state
-    #define RGB_DISABLE_WHEN_USB_SUSPENDED
+// Disable the lights after 15 minutes
+#define RGB_DISABLE_TIMEOUT 1000 * 60 * 15 // 15 minutes, to milliseconds
 
-    #define RGB_MATRIX_FRAMEBUFFER_EFFECTS // Heatmap, Rain
-    #define RGB_MATRIX_KEYPRESSES // REACTIVE, SPLASH modes
+// Disable lights when there's no USB signal
+//#define RGB_DISABLE_WHEN_USB_SUSPENDED 1
+
+#define RGB_MATRIX_FRAMEBUFFER_EFFECTS // Heatmap, Rain
+#define RGB_MATRIX_KEYPRESSES // REACTIVE, SPLASH modes
 
 // Soon we need to ENABLE modes by DEFAULT soon as per: https://github.com/qmk/qmk_firmware/pull/13758 Thanks @noroadsleft
 //    #undef ENABLE_RGB_MATRIX_SOLID_COLOR               // BUILT IN (MAPPED!) Static single color.
