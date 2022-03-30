@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// make gmmk/pro/ansi:nabeel
+
 #pragma once
 
 // I like NKRO.. but let's not force it. @drashna pointed out some older hardware has issues - Toggle it via keycode if you like.

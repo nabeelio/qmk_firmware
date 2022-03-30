@@ -30,7 +30,9 @@ enum my_keycodes {
   LED_0,
   LED_MINS,
   LED_EQL,
-  QMKBEST
+  QMKBEST,
+  SWITCH_PC_1,
+  SWITCH_PC_2
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -52,10 +54,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [1] = LAYOUT(
-        _______, KC_CALC, KC_MYCM, KC_MSEL, KC_MAIL,  KC_WHOM, _______, _______, _______, _______, _______, KC_WAKE, KC_SLEP, KC_PAUS,         _______,
+        _______, SWITCH_PC_1, SWITCH_PC_2, KC_MSEL, KC_MAIL,  KC_WHOM, _______, _______, _______, _______, _______, KC_WAKE, KC_SLEP, KC_PAUS,         _______,
       LED_TILDE, LED_1,  LED_2,   LED_3,   LED_4,    LED_5,   LED_6,   LED_7,   LED_8,   LED_9,   LED_0,   LED_MINS, LED_EQL,  KC_INS,         KC_SLCK,
+      // tab     q         w         e        r        t       y          u        i         o       p         [       ]
         _______, RGB_SAI, RGB_VAI, RGB_HUI, RGB_TOG,  _______, _______, _______, _______, _______, _______, _______, _______, RESET,           KC_BRIU,
-       _______, RGB_RMOD, RGB_VAD, RGB_MOD, RGB_SPI, _______,  _______, _______, _______, QMKBEST, _______, _______,         _______,          KC_BRID,
+        // caps   a         s         d         f        g       h         j        k        l      m        n                 o                enter
+       _______, RGB_RMOD, RGB_VAD, RGB_MOD, RGB_SPI, _______,  _______, _______, _______, QMKBEST, _______, _______,  _______,          KC_BRID,
         RGB_SPD,          _______, _______, _______, _______,  _______, NK_TOGG, _______, _______, _______, _______,         _______, KC_MPLY, KC_PWR,
         _______, _______, _______,                             _______,                            KC_RALT, _______, KC_APP, KC_MPRV, KC_MSTP, KC_MNXT
     ),
@@ -99,6 +103,8 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
   return true;
 }
 #endif //ENCODER_ENABLE
+
+static void send_switch_hotkey(int pc);
 
 #ifdef RGB_MATRIX_ENABLE
 static void set_rgb_caps_leds_on(void);
@@ -213,8 +219,50 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           SEND_STRING("!!");
         }
         break;
+
+    /**
+     * Send a hotkey to the switch to change to PC 1
+     */
+    case SWITCH_PC_1:
+        if (record->event.pressed) {
+            send_switch_hotkey(1);
+        }
+
+        break;
+
+    /**
+     * Send a hotkey to the switch to change to PC 2
+     */
+    case SWITCH_PC_2:
+        if (record->event.pressed) {
+            send_switch_hotkey(2);
+        }
+
+        break;
   }
  return true;
+}
+
+/**
+ * @brief Send the hotkey to the switch to change from pc1 or pc 2
+ *
+ * @param pc 1 or 2
+ */
+static void send_switch_hotkey(int pc) {
+    SEND_STRING(SS_TAP(X_SCROLLLOCK));
+    ///SS_DELAY(100);
+    SEND_STRING(SS_TAP(X_SCROLLLOCK));
+    //SS_DELAY(100);
+
+    if (pc == 1) {
+        SEND_STRING(SS_TAP(X_1));
+    } else {
+        SEND_STRING(SS_TAP(X_2));
+    }
+
+    //SS_DELAY(100);
+
+    SEND_STRING(SS_TAP(X_WAKE));
 }
 
 void rgb_matrix_indicators_user(void) {
