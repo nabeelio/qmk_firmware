@@ -250,9 +250,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
  */
 static void send_switch_hotkey(int pc) {
     SEND_STRING(SS_TAP(X_SCROLLLOCK));
-    ///SS_DELAY(100);
+    SEND_STRING(SS_DELAY(500));
     SEND_STRING(SS_TAP(X_SCROLLLOCK));
-    //SS_DELAY(100);
+    SEND_STRING(SS_DELAY(500));
 
     if (pc == 1) {
         SEND_STRING(SS_TAP(X_1));
@@ -260,7 +260,7 @@ static void send_switch_hotkey(int pc) {
         SEND_STRING(SS_TAP(X_2));
     }
 
-    //SS_DELAY(100);
+    SEND_STRING(SS_DELAY(500));
 
     SEND_STRING(SS_TAP(X_WAKE));
 }
