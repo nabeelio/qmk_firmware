@@ -16,35 +16,45 @@
 
 #include QMK_KEYBOARD_H
 
+#include "encoder.h"
+#include "rgb_matrix_map.h"
+
 enum my_keycodes {
   LED_TILDE = SAFE_RANGE,
-  LED_1,
-  LED_2,
-  LED_3,
-  LED_4,
-  LED_5,
-  LED_6,
-  LED_7,
-  LED_8,
-  LED_9,
-  LED_0,
-  LED_MINS,
-  LED_EQL,
+//  LED_1,
+//  LED_2,
+//  LED_3,
+//  LED_4,
+//  LED_5,
+//  LED_6,
+//  LED_7,
+//  LED_8,
+//  LED_9,
+//  LED_0,
+//  LED_MINS,
+//  LED_EQL,
   QMKBEST,
   SWITCH_PC_1,
   SWITCH_PC_2
 };
 
+enum custom_user_layers {
+    _BASE,
+    _FN1,
+    _LOWER,
+    _RAISE,
+};
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-//      ESC      F1       F2       F3       F4       F5        F6       F7       F8       F9       F10      F11      F12      Prt           Rotary(Mute)
+//      ESC      F1       F2       F3       F4       F5        F6       F7       F8       F9       F10      F11      F12      Prt           Rotary(Play/Pause)
 //      ~        1        2        3        4        5         6        7        8        9        0         -       (=)      BackSpc           Del
 //      Tab      Q        W        E        R        T         Y        U        I        O        P        [        ]        \                 PgUp
 //      Caps     A        S        D        F        G         H        J        K        L        ;        "                 Enter             PgDn
 //      Sh_L              Z        X        C        V         B        N        M        ,        .        ?                 Sh_R     Up       End
 //      Ct_L     Win_L    Alt_L                                SPACE                               Alt_R    FN       Ct_R     Left     Down     Right
 
-    [0] = LAYOUT(
+    [_BASE] = LAYOUT(
         KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,    KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_DEL,          KC_MEDIA_PLAY_PAUSE,
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,     KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MINS, KC_EQL,  KC_BSPC,          KC_HOME,
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,     KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS,          KC_END,
@@ -53,7 +63,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LCTL, KC_LGUI, KC_LALT,                             KC_SPC,                             KC_RALT, MO(1),   KC_RCTL, KC_LEFT, KC_DOWN, KC_RGHT
     ),
 
-    [1] = LAYOUT(
+    [_FN1] = LAYOUT(
         _______, SWITCH_PC_1, SWITCH_PC_2, KC_MSEL, KC_MAIL,  KC_WHOM, _______, _______, _______, _______, _______, KC_WAKE, KC_SLEP, KC_PAUS,         _______,
       LED_TILDE, LED_1,  LED_2,   LED_3,   LED_4,    LED_5,   LED_6,   LED_7,   LED_8,   LED_9,   LED_0,   LED_MINS, LED_EQL,  KC_INS,         KC_SLCK,
       // tab     q         w         e        r        t       y          u        i         o       p         [       ]
@@ -68,39 +78,32 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
-  // https://beta.docs.qmk.fm/using-qmk/simple-keycodes/feature_advanced_keycodes#alt-escape-for-alt-tab-id-alt-escape-for-alt-tab
-  if (get_mods() & MOD_MASK_CTRL) { // If CTRL is held
-    uint8_t mod_state = get_mods(); // Store all  modifiers that are held
-    unregister_mods(MOD_MASK_CTRL); // Immediately unregister the CRTL key (don't send CTRL-PgDn) - del_mods doesn't work here (not immediate)
-    if (clockwise) {
-      tap_code(KC_PGDN);
-    } else {
-      tap_code(KC_PGUP);
+    uint8_t mods_state = get_mods();
+    if (mods_state & MOD_BIT(KC_LSFT) ) { // If you are holding L shift, encoder changes layers
+        encoder_action_layerchange(clockwise);
+    } else if (mods_state & MOD_BIT(KC_RSFT) ) { // If you are holding R shift, Page up/dn
+        unregister_mods(MOD_BIT(KC_RSFT));
+        encoder_action_navpage(clockwise);
+        register_mods(MOD_BIT(KC_RSFT));
+    } else if (mods_state & MOD_BIT(KC_LCTL)) {  // if holding Left Ctrl, navigate next/prev word
+        encoder_action_navword(clockwise);
+    } else if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
+        encoder_action_rgb_hue(clockwise);
+    } else if (mods_state & MOD_BIT(KC_LALT)) {  // if holding Left Alt, change media next/prev track
+        encoder_action_mediatrack(clockwise);
+    } else  {
+        switch(get_highest_layer(layer_state)) {
+        case _FN1:
+            #ifdef IDLE_TIMEOUT_ENABLE
+                timeout_update_threshold(clockwise);
+            #endif
+            break;
+        default:
+            encoder_action_volume(clockwise);       // Otherwise it just changes volume
+            break;
+        }
     }
-    set_mods(mod_state); // Add back in the CTRL key - so ctrl-key will work if ctrl was never released after paging.
-  } else if (get_mods() & MOD_MASK_SHIFT) {
-    uint8_t mod_state = get_mods();
-    unregister_mods(MOD_MASK_SHIFT);
-    if (clockwise) {
-      #ifdef MOUSEKEY_ENABLE   // If using the mouse scroll - make sure MOUSEKEY is enabled
-        tap_code(KC_MS_WH_DOWN);
-      #else
-        tap_code(KC_VOLU);
-      #endif
-    } else {
-      #ifdef MOUSEKEY_ENABLE
-        tap_code(KC_MS_WH_UP);
-      #else
-        tap_code(KC_VOLD);
-      #endif
-    }
-    set_mods(mod_state);
-  } else if (clockwise) { // All else volume.
-    tap_code(KC_VOLU);
-  } else {
-    tap_code(KC_VOLD);
-  }
-  return true;
+    return true;
 }
 #endif //ENCODER_ENABLE
 
@@ -111,6 +114,80 @@ static void set_rgb_caps_leds_on(void);
 static void set_rgb_scroll_leds_on(void);
 static void set_rgb_caps_leds_off(void);
 static void set_rgb_scroll_leds_off(void);
+
+void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+//    if (get_rgb_nightmode()) rgb_matrix_set_color_all(RGB_OFF);
+    if (IS_HOST_LED_ON(USB_LED_SCROLL_LOCK)) {
+        set_rgb_scroll_leds_on();
+    } else {
+        set_rgb_scroll_leds_off();
+    }
+
+    // #ifdef INVERT_NUMLOCK_INDICATOR
+    //     if (!IS_HOST_LED_ON(USB_LED_NUM_LOCK)) {   // on if NUM lock is OFF
+    //         rgb_matrix_set_color(LED_L3, RGB_MAGENTA);
+    //         rgb_matrix_set_color(LED_L4, RGB_MAGENTA);
+    //     }
+    // #else
+    //     if (IS_HOST_LED_ON(USB_LED_NUM_LOCK)) {   // Normal, on if NUM lock is ON
+    //         rgb_matrix_set_color(LED_L3, RGB_MAGENTA);
+    //         rgb_matrix_set_color(LED_L4, RGB_MAGENTA);
+    //     }
+    // #endif // INVERT_NUMLOCK_INDICATOR
+
+    if (IS_HOST_LED_ON(USB_LED_CAPS_LOCK)) {
+        set_rgb_caps_leds_on();
+    } else {
+        set_rgb_caps_leds_off();
+    }
+
+    if (keymap_config.no_gui) {
+        rgb_matrix_set_color(LED_LWIN, RGB_RED);  //light up Win key when disabled
+    }
+
+//    switch(get_highest_layer(layer_state)){  // special handling per layer
+//    case _FN1:  // on Fn layer select what the encoder does when pressed
+//        rgb_matrix_set_color(LED_R2, RGB_RED);
+//        rgb_matrix_set_color(LED_R3, RGB_RED);
+//        rgb_matrix_set_color(LED_R4, RGB_RED);
+//        rgb_matrix_set_color(LED_FN, RGB_RED); //FN key
+//
+//        // Add RGB Timeout Indicator -- shows 0 to 139 using F row and num row;  larger numbers using 16bit code
+//        uint16_t timeout_threshold = get_timeout_threshold();
+//        if (timeout_threshold <= 10) rgb_matrix_set_color(LED_LIST_FUNCROW[timeout_threshold], RGB_RED);
+//        else if (timeout_threshold < 140) {
+//            rgb_matrix_set_color(LED_LIST_FUNCROW[(timeout_threshold / 10)], RGB_RED);
+//            rgb_matrix_set_color(LED_LIST_NUMROW[(timeout_threshold % 10)], RGB_RED);
+//        } else { // >= 140 minutes, just show these 3 lights
+//            rgb_matrix_set_color(LED_LIST_NUMROW[10], RGB_RED);
+//            rgb_matrix_set_color(LED_LIST_NUMROW[11], RGB_RED);
+//            rgb_matrix_set_color(LED_LIST_NUMROW[12], RGB_RED);
+//        }
+//        break;
+//     case _LOWER:
+//         for (uint8_t i=0; i<ARRAYSIZE(LED_LIST_NUMPAD); i++) {
+//             rgb_matrix_set_color(LED_LIST_NUMPAD[i], RGB_MAGENTA);
+//         }
+//         rgb_matrix_set_color(LED_R4, RGB_MAGENTA);
+//         rgb_matrix_set_color(LED_R5, RGB_MAGENTA);
+//         rgb_matrix_set_color(LED_R6, RGB_MAGENTA);
+//         break;
+//     case _RAISE:
+//         rgb_matrix_set_color(LED_R6, RGB_GREEN);
+//         rgb_matrix_set_color(LED_R7, RGB_GREEN);
+//         rgb_matrix_set_color(LED_R8, RGB_GREEN);
+//         break;
+// #ifdef COLEMAK_LAYER_ENABLE
+//     case _COLEMAK:
+//         for (uint8_t i=0; i<ARRAYSIZE(LED_SIDE_RIGHT); i++) {
+//             rgb_matrix_set_color(LED_SIDE_RIGHT[i], RGB_BLUE);
+//         }
+//         break;
+// #endif
+//    default:
+//        break;
+//    }
+}
 
 // Called on powerup and is the last _init that is run.
 void keyboard_post_init_user(void) {
@@ -199,19 +276,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case LED_9:
          rgb_matrix_mode(RGB_MATRIX_BREATHING);          // Can use RGB_M_B built-in keycode instead.
         break;
-    #ifdef RGB_MATRIX_KEYPRESSES                         // Reactive effects require RGB_MATRIX_KEYPRESSES in config.h
-    case LED_0:
-        rgb_matrix_mode(RGB_MATRIX_SOLID_REACTIVE_WIDE);
-        break;
-    #endif //RGB_MATRIX_KEYPRESSES
-    #ifdef RGB_MATRIX_FRAMEBUFFER_EFFECTS               // Heatmap and Rain require #define RGB_MATRIX_FRAMEBUFFER_EFFECTS in config.h
-    case LED_MINS:
-        rgb_matrix_mode(RGB_MATRIX_DIGITAL_RAIN);
-        break;
-    case LED_EQL:
-        rgb_matrix_mode(RGB_MATRIX_TYPING_HEATMAP);
-        break;
-    #endif //RGB_MATRIX_FRAMEBUFFER_EFFECTS
+//    #ifdef RGB_MATRIX_KEYPRESSES                         // Reactive effects require RGB_MATRIX_KEYPRESSES in config.h
+//    case LED_0:
+//        rgb_matrix_mode(RGB_MATRIX_SOLID_REACTIVE_WIDE);
+//        break;
+//    #endif //RGB_MATRIX_KEYPRESSES
+//    #ifdef RGB_MATRIX_FRAMEBUFFER_EFFECTS               // Heatmap and Rain require #define RGB_MATRIX_FRAMEBUFFER_EFFECTS in config.h
+//    case LED_MINS:
+//        rgb_matrix_mode(RGB_MATRIX_DIGITAL_RAIN);
+//        break;
+//    case LED_EQL:
+//        rgb_matrix_mode(RGB_MATRIX_TYPING_HEATMAP);
+//        break;
+//    #endif //RGB_MATRIX_FRAMEBUFFER_EFFECTS
     case QMKBEST:
       if (record->event.pressed) { // when keycode QMKBEST is pressed
           SEND_STRING("QMK rocks");
@@ -240,7 +317,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         break;
   }
- return true;
+
+  return true;
 }
 
 /**
@@ -265,22 +343,22 @@ static void send_switch_hotkey(int pc) {
     SEND_STRING(SS_TAP(X_WAKE));
 }
 
-void rgb_matrix_indicators_user(void) {
-    if (host_keyboard_led_state().caps_lock) {
-        set_rgb_caps_leds_on();
-    } else {
-      if (rgb_matrix_get_flags() == LED_FLAG_NONE){
-        set_rgb_caps_leds_off();
-      }
-    }
-    if (host_keyboard_led_state().scroll_lock) {
-        set_rgb_scroll_leds_on();
-    } else {
-      if (rgb_matrix_get_flags() == LED_FLAG_NONE){
-        set_rgb_scroll_leds_off();
-      }
-    }
-}
+// void rgb_matrix_indicators_user(void) {
+//     if (host_keyboard_led_state().caps_lock) {
+//         set_rgb_caps_leds_on();
+//     } else {
+//       if (rgb_matrix_get_flags() == LED_FLAG_NONE){
+//         set_rgb_caps_leds_off();
+//       }
+//     }
+//     if (host_keyboard_led_state().scroll_lock) {
+//         set_rgb_scroll_leds_on();
+//     } else {
+//       if (rgb_matrix_get_flags() == LED_FLAG_NONE){
+//         set_rgb_scroll_leds_off();
+//       }
+//     }
+// }
 
 // RGB led number layout, function of the key
 
@@ -295,74 +373,74 @@ void rgb_matrix_indicators_user(void) {
 
 static void set_rgb_caps_leds_on() {
         // f1 -> f12 keys
-        rgb_matrix_set_color(6, 255, 0, 0);
-        rgb_matrix_set_color(12, 255, 0, 0);
-        rgb_matrix_set_color(18, 255, 0, 0);
-        rgb_matrix_set_color(23, 255, 0, 0);
-        rgb_matrix_set_color(28, 255, 0, 0);
-        rgb_matrix_set_color(34, 255, 0, 0);
-        rgb_matrix_set_color(39, 255, 0, 0);
-        rgb_matrix_set_color(44, 255, 0, 0);
-        rgb_matrix_set_color(50, 255, 0, 0);
-        rgb_matrix_set_color(56, 255, 0, 0);
-        rgb_matrix_set_color(61, 255, 0, 0);
-        rgb_matrix_set_color(66, 255, 0, 0);
+        rgb_matrix_set_color(LED_F1, 255, 0, 0);
+        rgb_matrix_set_color(LED_F2, 255, 0, 0);
+        rgb_matrix_set_color(LED_F3, 255, 0, 0);
+        rgb_matrix_set_color(LED_F4, 255, 0, 0);
+        rgb_matrix_set_color(LED_F5, 255, 0, 0);
+        rgb_matrix_set_color(LED_F6, 255, 0, 0);
+        rgb_matrix_set_color(LED_F7, 255, 0, 0);
+        rgb_matrix_set_color(LED_F8, 255, 0, 0);
+        rgb_matrix_set_color(LED_F9, 255, 0, 0);
+        rgb_matrix_set_color(LED_F10, 255, 0, 0);
+        rgb_matrix_set_color(LED_F11, 255, 0, 0);
+        rgb_matrix_set_color(LED_F12, 255, 0, 0);
 
-        rgb_matrix_set_color(0, 255, 0, 0);       //Escape Key
-        rgb_matrix_set_color(3, 255, 0, 0);       //capslock key
-        rgb_matrix_set_color(5, 255, 0, 0);       //Left CTRL key
-        rgb_matrix_set_color(67, 255, 0, 0);      //Left LED 01
-        rgb_matrix_set_color(68, 255, 0, 0);      //Right LED 12
-        rgb_matrix_set_color(70, 255, 127, 0);    //Left LED 02
-        rgb_matrix_set_color(71, 255, 127, 0);    //Right LED 13
-        rgb_matrix_set_color(73, 255, 255, 0);    //Left LED 03
-        rgb_matrix_set_color(74, 255, 255, 0);    //Right LED 14
-        rgb_matrix_set_color(76, 0, 255, 0);      //Left LED 04
-        rgb_matrix_set_color(77, 0, 255, 0);      //Right LED 15
-        rgb_matrix_set_color(80, 0, 0, 255);      //Left LED 05
-        rgb_matrix_set_color(81, 0, 0, 255);      //Right LED 16
-        rgb_matrix_set_color(83, 46, 43, 95);     //Left LED 06
-        rgb_matrix_set_color(84, 46, 43, 95);     //Right LED 17
-        rgb_matrix_set_color(87, 139, 0, 255);    //Left LED 07
-        rgb_matrix_set_color(88, 139, 0, 255);    //Right LED 18
-        rgb_matrix_set_color(91, 255, 255, 255);  //Left LED 08
-        rgb_matrix_set_color(92, 255, 255, 255);  //Right LED 19
+        // rgb_matrix_set_color(0, 255, 0, 0);       //Escape Key
+        // rgb_matrix_set_color(3, 255, 0, 0);       //capslock key
+        // rgb_matrix_set_color(5, 255, 0, 0);       //Left CTRL key
+        // rgb_matrix_set_color(67, 255, 0, 0);      //Left LED 01
+        // rgb_matrix_set_color(68, 255, 0, 0);      //Right LED 12
+        // rgb_matrix_set_color(70, 255, 127, 0);    //Left LED 02
+        // rgb_matrix_set_color(71, 255, 127, 0);    //Right LED 13
+        // rgb_matrix_set_color(73, 255, 255, 0);    //Left LED 03
+        // rgb_matrix_set_color(74, 255, 255, 0);    //Right LED 14
+        // rgb_matrix_set_color(76, 0, 255, 0);      //Left LED 04
+        // rgb_matrix_set_color(77, 0, 255, 0);      //Right LED 15
+        // rgb_matrix_set_color(80, 0, 0, 255);      //Left LED 05
+        // rgb_matrix_set_color(81, 0, 0, 255);      //Right LED 16
+        // rgb_matrix_set_color(83, 46, 43, 95);     //Left LED 06
+        // rgb_matrix_set_color(84, 46, 43, 95);     //Right LED 17
+        // rgb_matrix_set_color(87, 139, 0, 255);    //Left LED 07
+        // rgb_matrix_set_color(88, 139, 0, 255);    //Right LED 18
+        // rgb_matrix_set_color(91, 255, 255, 255);  //Left LED 08
+        // rgb_matrix_set_color(92, 255, 255, 255);  //Right LED 19
 }
 
 static void set_rgb_caps_leds_off() {
             // f1 -> f12 keys
-        rgb_matrix_set_color(6, 0, 0, 0);
-        rgb_matrix_set_color(12, 0, 0, 0);
-        rgb_matrix_set_color(18, 0, 0, 0);
-        rgb_matrix_set_color(23, 0, 0, 0);
-        rgb_matrix_set_color(28, 0, 0, 0);
-        rgb_matrix_set_color(34, 0, 0, 0);
-        rgb_matrix_set_color(39, 0, 0, 0);
-        rgb_matrix_set_color(44, 0, 0, 0);
-        rgb_matrix_set_color(50, 0, 0, 0);
-        rgb_matrix_set_color(56, 0, 0, 0);
-        rgb_matrix_set_color(61, 0, 0, 0);
-        rgb_matrix_set_color(66, 0, 0, 0);
+        rgb_matrix_set_color(LED_F1, 0, 0, 0);
+        rgb_matrix_set_color(LED_F2, 0, 0, 0);
+        rgb_matrix_set_color(LED_F3, 0, 0, 0);
+        rgb_matrix_set_color(LED_F4, 0, 0, 0);
+        rgb_matrix_set_color(LED_F5, 0, 0, 0);
+        rgb_matrix_set_color(LED_F6, 0, 0, 0);
+        rgb_matrix_set_color(LED_F7, 0, 0, 0);
+        rgb_matrix_set_color(LED_F8, 0, 0, 0);
+        rgb_matrix_set_color(LED_F9, 0, 0, 0);
+        rgb_matrix_set_color(LED_F10, 0, 0, 0);
+        rgb_matrix_set_color(LED_F11, 0, 0, 0);
+        rgb_matrix_set_color(LED_F12, 0, 0, 0);
 
-        rgb_matrix_set_color(0,  0, 0, 0); //Escape Key
-        rgb_matrix_set_color(3,  0, 0, 0); //capslock key
-        rgb_matrix_set_color(5,  0, 0, 0); //Left CTRL key
-        rgb_matrix_set_color(67, 0, 0, 0); //Left LED 01
-        rgb_matrix_set_color(68, 0, 0, 0); //Right LED 12
-        rgb_matrix_set_color(70, 0, 0, 0); //Left LED 02
-        rgb_matrix_set_color(71, 0, 0, 0); //Right LED 13
-        rgb_matrix_set_color(73, 0, 0, 0); //Left LED 03
-        rgb_matrix_set_color(74, 0, 0, 0); //Right LED 14
-        rgb_matrix_set_color(76, 0, 0, 0); //Left LED 04
-        rgb_matrix_set_color(77, 0, 0, 0); //Right LED 15
-        rgb_matrix_set_color(80, 0, 0, 0); //Left LED 05
-        rgb_matrix_set_color(81, 0, 0, 0); //Right LED 16
-        rgb_matrix_set_color(83, 0, 0, 0); //Left LED 06
-        rgb_matrix_set_color(84, 0, 0, 0); //Right LED 17
-        rgb_matrix_set_color(87, 0, 0, 0); //Left LED 07
-        rgb_matrix_set_color(88, 0, 0, 0); //Right LED 18
-        rgb_matrix_set_color(91, 0, 0, 0); //Left LED 08
-        rgb_matrix_set_color(92, 0, 0, 0); //Right LED 19
+        // rgb_matrix_set_color(0,  0, 0, 0); //Escape Key
+        // rgb_matrix_set_color(3,  0, 0, 0); //capslock key
+        // rgb_matrix_set_color(5,  0, 0, 0); //Left CTRL key
+        // rgb_matrix_set_color(67, 0, 0, 0); //Left LED 01
+        // rgb_matrix_set_color(68, 0, 0, 0); //Right LED 12
+        // rgb_matrix_set_color(70, 0, 0, 0); //Left LED 02
+        // rgb_matrix_set_color(71, 0, 0, 0); //Right LED 13
+        // rgb_matrix_set_color(73, 0, 0, 0); //Left LED 03
+        // rgb_matrix_set_color(74, 0, 0, 0); //Right LED 14
+        // rgb_matrix_set_color(76, 0, 0, 0); //Left LED 04
+        // rgb_matrix_set_color(77, 0, 0, 0); //Right LED 15
+        // rgb_matrix_set_color(80, 0, 0, 0); //Left LED 05
+        // rgb_matrix_set_color(81, 0, 0, 0); //Right LED 16
+        // rgb_matrix_set_color(83, 0, 0, 0); //Left LED 06
+        // rgb_matrix_set_color(84, 0, 0, 0); //Right LED 17
+        // rgb_matrix_set_color(87, 0, 0, 0); //Left LED 07
+        // rgb_matrix_set_color(88, 0, 0, 0); //Right LED 18
+        // rgb_matrix_set_color(91, 0, 0, 0); //Left LED 08
+        // rgb_matrix_set_color(92, 0, 0, 0); //Right LED 19
 }
 
 static void set_rgb_scroll_leds_on() {
