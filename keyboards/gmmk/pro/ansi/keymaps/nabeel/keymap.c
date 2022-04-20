@@ -17,22 +17,23 @@
 #include QMK_KEYBOARD_H
 
 #include "encoder.h"
+#include "idle.h"
 #include "rgb_matrix_map.h"
 
 enum my_keycodes {
-  LED_TILDE = SAFE_RANGE,
-//  LED_1,
-//  LED_2,
-//  LED_3,
-//  LED_4,
-//  LED_5,
-//  LED_6,
-//  LED_7,
-//  LED_8,
-//  LED_9,
-//  LED_0,
-//  LED_MINS,
-//  LED_EQL,
+  LED_KEY_TILDE = SAFE_RANGE,
+  LED_KEY_1,
+  LED_KEY_2,
+  LED_KEY_3,
+  LED_KEY_4,
+  LED_KEY_5,
+  LED_KEY_6,
+  LED_KEY_7,
+  LED_KEY_8,
+  LED_KEY_9,
+  LED_KEY_0,
+  LED_KEY_MINS,
+  LED_KEY_EQL,
   QMKBEST,
   SWITCH_PC_1,
   SWITCH_PC_2
@@ -65,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_FN1] = LAYOUT(
         _______, SWITCH_PC_1, SWITCH_PC_2, KC_MSEL, KC_MAIL,  KC_WHOM, _______, _______, _______, _______, _______, KC_WAKE, KC_SLEP, KC_PAUS,         _______,
-      LED_TILDE, LED_1,  LED_2,   LED_3,   LED_4,    LED_5,   LED_6,   LED_7,   LED_8,   LED_9,   LED_0,   LED_MINS, LED_EQL,  KC_INS,         KC_SLCK,
+      LED_KEY_TILDE, LED_KEY_1,  LED_KEY_2,   LED_KEY_3,   LED_KEY_4,    LED_KEY_5,   LED_KEY_6,   LED_KEY_7,   LED_KEY_8,   LED_KEY_9,   LED_KEY_0,   LED_KEY_MINS, LED_KEY_EQL,  KC_INS,         KC_SLCK,
       // tab     q         w         e        r        t       y          u        i         o       p         [       ]
         _______, RGB_SAI, RGB_VAI, RGB_HUI, RGB_TOG,  _______, _______, _______, _______, _______, _______, _______, _______, RESET,           KC_BRIU,
         // caps   a         s         d         f        g       h         j        k        l      m        n                 o                enter
@@ -80,19 +81,38 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 bool encoder_update_user(uint8_t index, bool clockwise) {
     uint8_t mods_state = get_mods();
     if (mods_state & MOD_BIT(KC_LSFT) ) { // If you are holding L shift, encoder changes layers
+        //unregister_mods(MOD_BIT(KC_LSFT));
         encoder_action_layerchange(clockwise);
-    } else if (mods_state & MOD_BIT(KC_RSFT) ) { // If you are holding R shift, Page up/dn
-        unregister_mods(MOD_BIT(KC_RSFT));
+        return true;
+    }
+
+    if (mods_state & MOD_BIT(KC_RSFT) ) { // If you are holding R shift, Page up/dn
+        //unregister_mods(MOD_BIT(KC_RSFT));
         encoder_action_navpage(clockwise);
         register_mods(MOD_BIT(KC_RSFT));
-    } else if (mods_state & MOD_BIT(KC_LCTL)) {  // if holding Left Ctrl, navigate next/prev word
+
+        return true;
+    }
+
+    if (mods_state & MOD_BIT(KC_LCTL)) {  // if holding Left Ctrl, navigate next/prev word
+        //unregister_mods(MOD_BIT(KC_LCTL));
         encoder_action_navword(clockwise);
-    } else if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
+        return true;
+    }
+
+    if (mods_state & MOD_BIT(KC_RCTL)) {  // if holding Right Ctrl, change rgb hue/colour
+        //unregister_mods(MOD_BIT(KC_RCTL));
         encoder_action_rgb_hue(clockwise);
-    } else if (mods_state & MOD_BIT(KC_LALT)) {  // if holding Left Alt, change media next/prev track
+        return true;
+    }
+
+    if (mods_state & MOD_BIT(KC_LALT)) {  // if holding Left Alt, change media next/prev track
+        //unregister_mods(MOD_BIT(KC_LALT));
         encoder_action_mediatrack(clockwise);
-    } else  {
-        switch(get_highest_layer(layer_state)) {
+        return true;
+    }
+
+    switch(get_highest_layer(layer_state)) {
         case _FN1:
             #ifdef IDLE_TIMEOUT_ENABLE
                 timeout_update_threshold(clockwise);
@@ -101,7 +121,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         default:
             encoder_action_volume(clockwise);       // Otherwise it just changes volume
             break;
-        }
     }
     return true;
 }
@@ -246,46 +265,46 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           }
       }
       return false;
-    case LED_TILDE:
+    case LED_KEY_TILDE:
         rgb_matrix_mode(RGB_MATRIX_SOLID_COLOR);          // Can use RGB_M_P built-in keycode instead.
         break;
-     case LED_1:
+     case LED_KEY_1:
         rgb_matrix_mode(RGB_MATRIX_CYCLE_LEFT_RIGHT);
         break;
-    case LED_2:
+    case LED_KEY_2:
         rgb_matrix_mode(RGB_MATRIX_GRADIENT_LEFT_RIGHT);
         break;
-    case LED_3:
+    case LED_KEY_3:
         rgb_matrix_mode(RGB_MATRIX_JELLYBEAN_RAINDROPS);
         break;
-    case LED_4:
+    case LED_KEY_4:
         rgb_matrix_mode(RGB_MATRIX_BAND_SAT);
         break;
-    case LED_5:
+    case LED_KEY_5:
         rgb_matrix_mode(RGB_MATRIX_BAND_VAL);
         break;
-    case LED_6:
+    case LED_KEY_6:
         rgb_matrix_mode(RGB_MATRIX_BAND_SPIRAL_VAL);
         break;
-    case LED_7:
+    case LED_KEY_7:
         rgb_matrix_mode(RGB_MATRIX_CYCLE_LEFT_RIGHT);    // Can use RGB_M_R built-in keycode instead.
         break;
-    case LED_8:
+    case LED_KEY_8:
         rgb_matrix_mode(RGB_MATRIX_CYCLE_PINWHEEL);      // Can use RGB_M_SW built-in keycode instead.
         break;
-    case LED_9:
+    case LED_KEY_9:
          rgb_matrix_mode(RGB_MATRIX_BREATHING);          // Can use RGB_M_B built-in keycode instead.
         break;
 //    #ifdef RGB_MATRIX_KEYPRESSES                         // Reactive effects require RGB_MATRIX_KEYPRESSES in config.h
-//    case LED_0:
+//    case LED_KEY_0:
 //        rgb_matrix_mode(RGB_MATRIX_SOLID_REACTIVE_WIDE);
 //        break;
 //    #endif //RGB_MATRIX_KEYPRESSES
 //    #ifdef RGB_MATRIX_FRAMEBUFFER_EFFECTS               // Heatmap and Rain require #define RGB_MATRIX_FRAMEBUFFER_EFFECTS in config.h
-//    case LED_MINS:
+//    case LED_KEY_MINS:
 //        rgb_matrix_mode(RGB_MATRIX_DIGITAL_RAIN);
 //        break;
-//    case LED_EQL:
+//    case LED_KEY_EQL:
 //        rgb_matrix_mode(RGB_MATRIX_TYPING_HEATMAP);
 //        break;
 //    #endif //RGB_MATRIX_FRAMEBUFFER_EFFECTS
