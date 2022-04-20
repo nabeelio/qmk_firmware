@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #ifdef IDLE_TIMEOUT_ENABLE
         static uint16_t timeout_timer = 0;
         static uint16_t timeout_counter = 0;  //in minute intervals

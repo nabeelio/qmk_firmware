@@ -33,16 +33,16 @@
 
     void encoder_action_volume(bool clockwise) {
         if (clockwise)
-            tap_code(KC_VOLU);
+            tap_code_delay(KC_VOLU, 10);
         else
-            tap_code(KC_VOLD);
+            tap_code_delay(KC_VOLD, 10);
     }
 
     void encoder_action_mediatrack(bool clockwise) {
         if (clockwise)
-            tap_code(KC_MEDIA_NEXT_TRACK);
+            tap_code_delay(KC_MEDIA_NEXT_TRACK, 10);
         else
-            tap_code(KC_MEDIA_PREV_TRACK);
+            tap_code_delay(KC_MEDIA_PREV_TRACK, 10);
     }
 
     void encoder_action_navword(bool clockwise) {
