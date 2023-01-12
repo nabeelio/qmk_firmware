@@ -68,7 +68,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______, SWITCH_PC_1, SWITCH_PC_2, KC_MSEL, KC_MAIL,  KC_WHOM, _______, _______, _______, _______, _______, KC_WAKE, KC_SLEP, KC_PAUS,         _______,
       LED_KEY_TILDE, LED_KEY_1,  LED_KEY_2,   LED_KEY_3,   LED_KEY_4,  LED_KEY_5, LED_KEY_6, LED_KEY_7, LED_KEY_8, LED_KEY_9, LED_KEY_0, LED_KEY_MINS, LED_KEY_EQL, KC_INS, KC_SCRL,
       // tab     q         w         e        r        t       y          u        i         o       p         [       ]
-        _______, RGB_SAI, RGB_VAI, RGB_HUI, RGB_TOG,  _______, _______, _______, _______, _______, _______, _______, _______, RESET,           KC_BRIU,
+        _______, RGB_SAI, RGB_VAI, RGB_HUI, RGB_TOG,  _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT,           KC_BRIU,
         // caps   a         s         d         f        g       h         j        k        l      m        n                 o                enter
        _______, RGB_RMOD, RGB_VAD, RGB_MOD, RGB_SPI, _______,  _______, _______, _______, QMKBEST, _______, _______,  _______,          KC_BRID,
         RGB_SPD,          _______, _______, _______, _______,  _______, NK_TOGG, _______, _______, _______, _______,         _______, KC_MPLY, KC_PWR,
