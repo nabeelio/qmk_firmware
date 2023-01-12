@@ -21,6 +21,10 @@
 #undef TAP_CODE_DELAY
 #define TAP_CODE_DELAY 10
 
+// override from the gmmk/pro/config.h
+#undef DEBOUNCE
+#define DEBOUNCE 8
+
 #ifdef RGB_MATRIX_ENABLE
     #define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_CYCLE_LEFT_RIGHT
 //    #define ENABLE_RGB_MATRIX_DIGITAL_RAIN
