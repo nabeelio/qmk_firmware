@@ -23,7 +23,7 @@
 
 // override from the gmmk/pro/config.h
 #undef DEBOUNCE
-#define DEBOUNCE 8
+#define DEBOUNCE 16
 
 #ifdef RGB_MATRIX_ENABLE
     #define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_CYCLE_LEFT_RIGHT
